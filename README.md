@@ -37,7 +37,7 @@
 
 ### 方式一：安装程序（推荐）
 
-前往 [Releases](https://github.com/此处替换为你的用户名/clipboardpro/releases) 页面，下载最新的 `ClipboardPro Setup x.x.x.exe`：
+前往 [Releases](https://github.com/ll125408qq-dotcom/clipboardpro/releases) 页面，下载最新的 `ClipboardPro Setup x.x.x.exe`：
 
 1. 双击运行安装程序
 2. 选择安装路径（或使用默认路径）
@@ -52,7 +52,7 @@
 
 ```bash
 # 克隆仓库
-git clone https://github.com/此处替换为你的用户名/clipboardpro.git
+git clone https://github.com/ll125408qq-dotcom/clipboardpro.git
 cd clipboardpro
 
 # 安装依赖
