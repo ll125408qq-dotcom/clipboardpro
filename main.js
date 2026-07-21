@@ -18,6 +18,10 @@ const {
 const path = require('path');
 const fs = require('fs');
 
+// ★ 禁用窗口动画，修复透明窗口 show/hide 时 GPU 上下文重建导致的白闪
+//   参考：Electron issue #42523，官方在 v37.7.1+ 修复，此开关作为额外保险
+app.commandLine.appendSwitch('wm-window-animations-disabled');
+
 // --------------------------------------------------
 // ★ 单实例锁：防止双击 exe 创建多个进程
 //   如果已有实例在运行，退出当前进程并唤醒已有窗口
@@ -325,10 +329,17 @@ function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
-  mainWindow.once('ready-to-show', () => {
-    mainWindow.show();
-    startClipboardWatcher();
-  });
+  // ★ 等待 ready-to-show + did-finish-load 同时触发后再 show，
+  //   避免透明窗口首次渲染时的白闪（Electron issue #42523）
+  let ready = false, finished = false;
+  const tryShow = () => {
+    if (ready && finished && mainWindow) {
+      mainWindow.show();
+      startClipboardWatcher();
+    }
+  };
+  mainWindow.once('ready-to-show', () => { ready = true; tryShow(); });
+  mainWindow.webContents.once('did-finish-load', () => { finished = true; tryShow(); });
 
   // 关闭 → 隐藏到托盘
   mainWindow.on('close', (event) => {

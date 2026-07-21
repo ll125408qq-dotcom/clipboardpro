@@ -48,7 +48,7 @@
   "author": "ClipboardPro User",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^33.0.0",
+    "electron": "^39.0.0",
     "electron-builder": "^25.1.8"
   }
 }
