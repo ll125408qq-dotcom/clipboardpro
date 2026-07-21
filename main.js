@@ -19,6 +19,24 @@ const path = require('path');
 const fs = require('fs');
 
 // --------------------------------------------------
+// ★ 单实例锁：防止双击 exe 创建多个进程
+//   如果已有实例在运行，退出当前进程并唤醒已有窗口
+// --------------------------------------------------
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    // 已有实例收到第二个启动请求 → 显示窗口
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  });
+}
+
+// --------------------------------------------------
 // 全局变量
 // --------------------------------------------------
 let mainWindow = null;
@@ -295,6 +313,7 @@ function createWindow() {
     backgroundColor: '#00000000',
     resizable: true,
     show: false,
+    paintWhenInitiallyHidden: true,  // 隐藏时持续绘制，避免首次 show 白闪
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

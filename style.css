@@ -91,7 +91,21 @@ html, body {
   font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
   font-size: 14px;
   color: var(--text-primary);
+  /* 先给一个兜底色，避免透明窗口 show 时白闪，backdrop-filter 生效后覆盖 */
   background: transparent;
+}
+/* 防止透明窗口在渲染首帧前闪白 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: rgba(30, 30, 33, 0.88);
+}
+@media (prefers-color-scheme: light) {
+  body::before {
+    background: rgba(240, 242, 245, 0.85);
+  }
 }
 
 body {
