@@ -1,0 +1,21 @@
+# 依赖
+node_modules/
+
+# 打包输出
+dist/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# 日志
+*.log
+npm-debug.log*
+
+# 用户数据（开发时生成）
+clipboard_history.json
+settings.json

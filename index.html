@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClipboardPro - 增强型剪贴板管理器</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 整个应用容器 -->
+  <div id="app">
+
+    <!-- ====== 左侧时间线侧边栏 ====== -->
+    <aside class="timeline-sidebar">
+      <div class="timeline-header">
+        <span class="timeline-title">📅 时间线</span>
+        <button id="timelineAllBtn" class="timeline-all-btn active" title="显示全部">全部</button>
+      </div>
+      <div class="timeline-body">
+        <div id="timelineNodes" class="timeline-nodes">
+          <!-- 时间线节点将由 renderer.js 动态生成 -->
+        </div>
+        <div id="timelineEmpty" class="timeline-empty" style="display:none">
+          <span>暂无记录</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ====== 右侧主内容区 ====== -->
+    <div class="main-panel">
+      <!-- 顶部标题栏 + 搜索框 -->
+      <header class="app-header">
+        <div class="title-bar">
+          <span class="app-title">📋 ClipboardPro</span>
+          <div class="window-controls">
+            <button id="minimizeBtn" class="win-btn" title="最小化">−</button>
+            <button id="closeBtn" class="win-btn close" title="关闭">×</button>
+          </div>
+        </div>
+
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="搜索复制内容..."
+            autocomplete="off"
+          />
+          <button id="clearSearchBtn" class="clear-search" title="清空搜索">×</button>
+        </div>
+      </header>
+
+      <!-- 剪贴板历史列表 -->
+      <main class="history-container">
+        <ul id="historyList" class="history-list">
+          <!-- 列表项由 renderer.js 动态生成 -->
+        </ul>
+
+        <!-- 空状态提示 -->
+        <div id="emptyState" class="empty-state">
+          <div class="empty-icon">📋</div>
+          <p>暂无剪贴板记录</p>
+          <span>复制任意文本后，这里会自动显示历史记录</span>
+        </div>
+      </main>
+    </div>
+
+  </div>
+
+  <!-- Toast 提示 -->
+  <div id="toast" class="toast">已复制</div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

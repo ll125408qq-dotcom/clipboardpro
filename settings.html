@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClipboardPro 设置</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%; height: 100%;
+      font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+      font-size: 14px;
+      background: transparent;
+      overflow: hidden;
+    }
+    body {
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+    }
+    :root {
+      --bg-primary: rgba(240, 242, 245, 0.85);
+      --bg-secondary: rgba(255, 255, 255, 0.65);
+      --bg-input: rgba(255, 255, 255, 0.8);
+      --bg-button: rgba(255, 255, 255, 0.9);
+      --bg-button-hover: rgba(240, 240, 240, 0.95);
+      --text-primary: #1c1c1c;
+      --text-secondary: #5f5f5f;
+      --text-muted: #888;
+      --accent: #0067c0;
+      --accent-hover: #0056a3;
+      --danger: #c42b1c;
+      --border: rgba(0,0,0,0.06);
+      --radius: 10px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-primary: rgba(30,30,33,0.88);
+        --bg-secondary: rgba(43,43,46,0.7);
+        --bg-input: rgba(43,43,46,0.8);
+        --bg-button: rgba(54,54,58,0.9);
+        --bg-button-hover: rgba(66,66,71,0.95);
+        --text-primary: #f0f0f0;
+        --text-secondary: #b0b0b0;
+        --text-muted: #777;
+        --accent: #4cc2ff;
+        --accent-hover: #3aaee0;
+        --danger: #ff99a4;
+        --border: rgba(255,255,255,0.08);
+      }
+    }
+
+    #settings-app {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      background: var(--bg-primary);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .settings-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px 12px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      -webkit-app-region: drag;
+      user-select: none;
+    }
+    .settings-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+    .settings-close {
+      width: 28px; height: 24px; border: none; border-radius: 6px;
+      background: var(--bg-button); color: var(--text-primary);
+      font-size: 14px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      -webkit-app-region: no-drag;
+      transition: all 0.2s;
+    }
+    .settings-close:hover { background: var(--danger); color: #fff; }
+
+    .settings-body {
+      flex: 1; padding: 20px;
+      display: flex; flex-direction: column; gap: 16px;
+      -webkit-app-region: no-drag;
+    }
+    .setting-group { display: flex; flex-direction: column; gap: 6px; }
+    .setting-label { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+    .shortcut-display {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 18px; font-weight: 600;
+      color: var(--text-primary);
+      min-height: 44px;
+      letter-spacing: 1px;
+    }
+    .shortcut-display.recording {
+      border-color: var(--danger);
+      box-shadow: 0 0 0 2px rgba(196,43,28,0.2);
+      animation: pulse 0.8s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 2px rgba(196,43,28,0.2); }
+      50% { box-shadow: 0 0 0 4px rgba(196,43,28,0.35); }
+    }
+    .hint { font-size: 11px; color: var(--text-muted); }
+
+    .settings-actions {
+      display: flex; gap: 8px; justify-content: flex-end;
+      margin-top: auto;
+    }
+    .btn {
+      padding: 8px 18px; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+      -webkit-app-region: no-drag;
+    }
+    .btn-primary {
+      background: var(--accent); color: #fff; border-color: var(--accent);
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary {
+      background: var(--bg-button); color: var(--text-primary);
+    }
+    .btn-secondary:hover { background: var(--bg-button-hover); }
+    .btn-record {
+      padding: 6px 14px; font-size: 12px;
+      background: var(--bg-button); color: var(--accent);
+      border: 1px solid var(--accent); border-radius: 6px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-record:hover { background: var(--accent); color: #fff; }
+    .btn-record.recording { background: var(--danger); color: #fff; border-color: var(--danger); }
+  </style>
+</head>
+<body>
+  <div id="settings-app">
+    <div class="settings-header">
+      <span class="settings-title">⚙️ 设置</span>
+      <button id="closeBtn" class="settings-close" title="关闭">×</button>
+    </div>
+    <div class="settings-body">
+      <div class="setting-group">
+        <span class="setting-label">全局快捷键（显示/隐藏窗口）</span>
+        <div id="shortcutDisplay" class="shortcut-display">Ctrl+Alt+V</div>
+        <span class="hint" id="statusHint">点击下方按钮录制新的快捷键组合</span>
+      </div>
+      <div>
+        <button id="recordBtn" class="btn-record">🎹 录制快捷键</button>
+      </div>
+      <div class="settings-actions">
+        <button id="cancelBtn" class="btn btn-secondary">取消</button>
+        <button id="saveBtn" class="btn btn-primary">保存</button>
+      </div>
+    </div>
+  </div>
+  <script src="settings-renderer.js"></script>
+</body>
+</html>

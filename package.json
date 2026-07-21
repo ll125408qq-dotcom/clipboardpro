@@ -1,0 +1,54 @@
+{
+  "name": "clipboardpro",
+  "version": "1.0.0",
+  "description": "Windows 11 风格的增强型剪贴板管理器，支持持久化历史记录与全局快捷键唤醒",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "dist": "electron-builder --win",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "build": {
+    "appId": "com.clipboardpro.app",
+    "productName": "ClipboardPro",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "settings-preload.js",
+      "index.html",
+      "settings.html",
+      "style.css",
+      "renderer.js",
+      "settings-renderer.js",
+      "assets/**"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "ClipboardPro",
+      "uninstallDisplayName": "ClipboardPro - 增强型剪贴板管理器"
+    }
+  },
+  "keywords": [
+    "clipboard",
+    "electron",
+    "windows11",
+    "productivity"
+  ],
+  "author": "ClipboardPro User",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  }
+}
