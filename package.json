@@ -18,6 +18,7 @@
     },
     "files": [
       "main.js",
+      "icon-gen.js",
       "preload.js",
       "settings-preload.js",
       "index.html",
@@ -28,8 +29,7 @@
       "assets/**"
     ],
     "win": {
-      "target": "nsis",
-      "icon": "assets/icon.ico"
+      "target": "nsis"
     },
     "nsis": {
       "oneClick": false,

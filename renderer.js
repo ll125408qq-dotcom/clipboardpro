@@ -359,8 +359,8 @@ function toggleExpand(g) {
   else { expandedMonth = g.yearMonth; if (currentTimeFilter && currentTimeFilter.yearMonth !== g.yearMonth) clearTimeFilter(); }
   renderTimeline(); applySearch();
 }
-function selectTimeNode(ym, dh) { currentTimeFilter = { yearMonth: ym, dayHour: dh }; updateTimelineAllBtn(); renderTimeline(); applySearch(); }
-function clearTimeFilter() { currentTimeFilter = null; updateTimelineAllBtn(); renderTimeline(); applySearch(); }
+function selectTimeNode(ym, dh) { currentTimeFilter = { yearMonth: ym, dayHour: dh }; currentFolder = null; isFavFilter = false; renderFolders(); updateTimelineAllBtn(); renderTimeline(); applySearch(); }
+function clearTimeFilter() { currentTimeFilter = null; currentFolder = null; isFavFilter = false; renderFolders(); updateTimelineAllBtn(); renderTimeline(); applySearch(); }
 function updateTimelineAllBtn() { timelineAllBtn.classList.toggle('active', !currentTimeFilter && !isFavFilter && currentFolder === null); }
 
 // ============================================================

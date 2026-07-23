@@ -933,7 +933,6 @@ body {
   box-shadow: 0 4px 16px rgba(0,0,0,0.2);
   padding: 4px;
   min-width: 120px;
-  backdrop-filter: blur(20px);
 }
 .ctx-item {
   padding: 6px 14px;
