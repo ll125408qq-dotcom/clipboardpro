@@ -48,6 +48,7 @@ const favPickerNewBtn = document.getElementById('favPickerNewBtn');
 const favPickerCancelBtn = document.getElementById('favPickerCancelBtn');
 
 let ctxTargetFolder = '';           // 右键菜单目标文件夹
+let renameTarget = null;            // 重命名目标，null=新建模式，有值=重命名模式
 let favTargetItemId = null;         // 正在收藏的 item id
 
 // --------------------------------------------------
@@ -120,6 +121,13 @@ async function saveHistory() {
 function renderFolders() {
   folderListEl.innerHTML = '';
 
+  // 全部内容 —— 清空所有过滤，显示全部记录
+  const allItems = document.createElement('li');
+  allItems.className = 'folder-item' + (currentFolder === null && !isFavFilter && !currentTimeFilter ? ' active' : '');
+  allItems.innerHTML = `<span class="folder-icon">📋</span><span class="folder-name">全部内容</span><span class="folder-count">${historyItems.length}</span>`;
+  allItems.addEventListener('click', () => { selectAllItems(); });
+  folderListEl.appendChild(allItems);
+
   // 全部收藏 —— 过滤所有 favorite === true
   const allFav = document.createElement('li');
   allFav.className = 'folder-item' + (currentFolder === null && isFavFilter ? ' active' : '');
@@ -141,7 +149,15 @@ function renderFolders() {
 function selectFavAll() {
   currentFolder = null;
   isFavFilter = true;
-  // 清时间线过滤
+  currentTimeFilter = null; expandedMonth = null; updateTimelineAllBtn();
+  renderFolders();
+  renderTimeline();
+  applySearch();
+}
+
+function selectAllItems() {
+  currentFolder = null;
+  isFavFilter = false;
   currentTimeFilter = null; expandedMonth = null; updateTimelineAllBtn();
   renderFolders();
   renderTimeline();
@@ -149,6 +165,11 @@ function selectFavAll() {
 }
 
 function selectFolder(folder) {
+  // 点击已选中的文件夹 → 取消选中，回到全部
+  if (currentFolder === folder) {
+    selectAllItems();
+    return;
+  }
   currentFolder = folder;
   isFavFilter = false;
   currentTimeFilter = null; expandedMonth = null; updateTimelineAllBtn();
@@ -176,8 +197,12 @@ ctxMenu.addEventListener('click', (e) => {
   ctxMenu.style.display = 'none';
   if (!action || !ctxTargetFolder) return;
   if (action === 'rename') {
-    const name = prompt('输入新名称：', ctxTargetFolder);
-    if (name && name.trim()) renameFolder(ctxTargetFolder, name.trim());
+    renameTarget = ctxTargetFolder;
+    modalTitle.textContent = '重命名文件夹';
+    modalInput.value = ctxTargetFolder;
+    modalInput.placeholder = '输入新名称';
+    folderModal.style.display = 'flex';
+    modalInput.focus();
   } else if (action === 'delete') {
     if (ctxTargetFolder === '默认') { showToast('不能删除默认文件夹'); return; }
     if (confirm(`确定删除「${ctxTargetFolder}」？其中的收藏将被取消。`)) deleteFolder(ctxTargetFolder);
@@ -251,27 +276,21 @@ function showFavPicker(text) {
     });
     list.appendChild(li);
   });
-  // 底部加新建
-  const newLi = document.createElement('li');
-  newLi.innerHTML = `<span class="fp-icon">＋</span> 新建文件夹...`;
-  newLi.style.color = 'var(--accent)';
-  newLi.addEventListener('click', () => {
-    favPickerModal.style.display = 'none';
-    const name = prompt('输入新文件夹名称：');
-    if (name && name.trim()) {
-      if (!folders.includes(name.trim())) {
-        folders.push(name.trim());
-        saveSettings();
-        renderFolders();
-      }
-      setFavorite(favTargetItemId, name.trim());
-    }
-  });
-  list.appendChild(newLi);
   favPickerModal.style.display = 'flex';
 }
 
 favPickerCancelBtn.addEventListener('click', () => { favPickerModal.style.display = 'none'; favTargetItemId = null; });
+
+favPickerNewBtn.addEventListener('click', () => {
+  favPickerModal.style.display = 'none';
+  folderModal._pendingFav = favTargetItemId;
+  renameTarget = null;
+  modalTitle.textContent = '新建文件夹';
+  modalInput.value = '';
+  modalInput.placeholder = '输入文件夹名称';
+  folderModal.style.display = 'flex';
+  modalInput.focus();
+});
 
 function setFavorite(id, folder) {
   const item = historyItems.find(i => i.id === id);
@@ -338,7 +357,7 @@ function toggleExpand(g) {
 }
 function selectTimeNode(ym, dh) { currentTimeFilter = { yearMonth: ym, dayHour: dh }; updateTimelineAllBtn(); renderTimeline(); applySearch(); }
 function clearTimeFilter() { currentTimeFilter = null; updateTimelineAllBtn(); renderTimeline(); applySearch(); }
-function updateTimelineAllBtn() { timelineAllBtn.classList.toggle('active', !currentTimeFilter); }
+function updateTimelineAllBtn() { timelineAllBtn.classList.toggle('active', !currentTimeFilter && !isFavFilter && currentFolder === null); }
 
 // ============================================================
 //  搜索 + 过滤 + 渲染
@@ -406,21 +425,36 @@ async function deleteItem(id) {
 //  新建文件夹弹窗
 // ============================================================
 newFolderBtn.addEventListener('click', () => {
+  renameTarget = null; folderModal._pendingFav = null;
   folderModal.style.display = 'flex'; modalTitle.textContent = '新建文件夹'; modalInput.value = ''; modalInput.placeholder = '输入文件夹名称'; modalInput.focus();
 });
 modalConfirmBtn.addEventListener('click', () => {
   const name = modalInput.value.trim();
-  if (name) { createFolder(name); folderModal.style.display = 'none'; }
+  if (!name) return;
+  if (renameTarget) {
+    renameFolder(renameTarget, name);
+    renameTarget = null;
+    folderModal.style.display = 'none';
+  } else {
+    createFolder(name);
+    folderModal.style.display = 'none';
+    // 如果是从收藏弹窗过来新建的，自动收藏到新文件夹
+    const pendingFav = folderModal._pendingFav;
+    if (pendingFav) {
+      folderModal._pendingFav = null;
+      setFavorite(pendingFav, name);
+    }
+  }
 });
-modalCancelBtn.addEventListener('click', () => { folderModal.style.display = 'none'; });
-folderModal.addEventListener('click', (e) => { if (e.target === folderModal) folderModal.style.display = 'none'; });
-modalInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') modalConfirmBtn.click(); if (e.key === 'Escape') folderModal.style.display = 'none'; });
+modalCancelBtn.addEventListener('click', () => { folderModal.style.display = 'none'; renameTarget = null; folderModal._pendingFav = null; });
+folderModal.addEventListener('click', (e) => { if (e.target === folderModal) { folderModal.style.display = 'none'; renameTarget = null; folderModal._pendingFav = null; } });
+modalInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') modalConfirmBtn.click(); if (e.key === 'Escape') { folderModal.style.display = 'none'; renameTarget = null; folderModal._pendingFav = null; } });
 
 // ============================================================
 //  事件绑定
 // ============================================================
 function bindEvents() {
-  timelineAllBtn.addEventListener('click', clearTimeFilter);
+  timelineAllBtn.addEventListener('click', selectAllItems);
   searchInputEl.addEventListener('input', (e) => { currentSearch = e.target.value.trim(); updateClearSearchBtn(); applySearch(); });
   clearSearchBtn.addEventListener('click', () => { searchInputEl.value = ''; currentSearch = ''; updateClearSearchBtn(); applySearch(); searchInputEl.focus(); });
   minimizeBtn.addEventListener('click', () => window.electronAPI.minimizeWindow && window.electronAPI.minimizeWindow());
