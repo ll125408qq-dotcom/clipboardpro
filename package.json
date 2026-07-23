@@ -12,6 +12,7 @@
   "build": {
     "appId": "com.clipboardpro.app",
     "productName": "win新剪贴板",
+    "icon": "assets/icon.png",
     "directories": {
       "output": "dist"
     },
