@@ -193,7 +193,7 @@ document.addEventListener('click', (e) => {
 });
 
 ctxMenu.addEventListener('click', (e) => {
-  const action = e.target.dataset.action;
+  const action = (e.target.closest('.ctx-item') || {}).dataset.action;
   ctxMenu.style.display = 'none';
   if (!action || !ctxTargetFolder) return;
   if (action === 'rename') {
@@ -355,9 +355,16 @@ function renderTimeline() {
   });
 }
 function toggleExpand(g) {
-  if (expandedMonth === g.yearMonth) { expandedMonth = null; if (currentTimeFilter && currentTimeFilter.yearMonth === g.yearMonth) clearTimeFilter(); }
-  else { expandedMonth = g.yearMonth; if (currentTimeFilter && currentTimeFilter.yearMonth !== g.yearMonth) clearTimeFilter(); }
-  renderTimeline(); applySearch();
+  // 展开/折叠时间线时清除文件夹/收藏过滤，按时间浏览全部内容
+  currentFolder = null; isFavFilter = false; renderFolders();
+  if (expandedMonth === g.yearMonth) {
+    expandedMonth = null;
+    if (currentTimeFilter && currentTimeFilter.yearMonth === g.yearMonth) currentTimeFilter = null;
+  } else {
+    expandedMonth = g.yearMonth;
+    if (currentTimeFilter && currentTimeFilter.yearMonth !== g.yearMonth) currentTimeFilter = null;
+  }
+  updateTimelineAllBtn(); renderTimeline(); applySearch();
 }
 function selectTimeNode(ym, dh) { currentTimeFilter = { yearMonth: ym, dayHour: dh }; currentFolder = null; isFavFilter = false; renderFolders(); updateTimelineAllBtn(); renderTimeline(); applySearch(); }
 function clearTimeFilter() { currentTimeFilter = null; currentFolder = null; isFavFilter = false; renderFolders(); updateTimelineAllBtn(); renderTimeline(); applySearch(); }

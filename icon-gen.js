@@ -75,7 +75,7 @@ function generateRGBA(S) {
   const CLIP = [176, 178, 192], CLIP_HL = [210, 212, 224];
   const STAR = [255, 215, 0], STAR_HL = [255, 230, 80];
   const LINE = [212, 192, 162];
-  const star = starPoints(S * 0.82, S * 0.18, S * 0.12);
+  const star = starPoints(S * 0.80, S * 0.20, S * 0.17);
 
   for (let y = 0; y < S; y++) {
     for (let x = 0; x < S; x++) {
