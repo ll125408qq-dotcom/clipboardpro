@@ -64,7 +64,8 @@ if (!fs.existsSync(DATA_DIR)) {
 // 默认设置
 // --------------------------------------------------
 const DEFAULT_SETTINGS = {
-  shortcut: 'CommandOrControl+Shift+V'
+  shortcut: 'CommandOrControl+Shift+V',
+  folders: ['默认']
 };
 
 // --------------------------------------------------
@@ -82,7 +83,10 @@ function loadSettings() {
 
 function saveSettings(settings) {
   try {
-    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2), 'utf-8');
+    // 合并：读取当前设置，然后用新值覆盖，避免丢掉其他字段（如 folders）
+    const current = loadSettings();
+    const merged = { ...current, ...settings };
+    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(merged, null, 2), 'utf-8');
   } catch (e) { console.error('保存设置失败：', e); }
 }
 

@@ -10,18 +10,37 @@
   <!-- 整个应用容器 -->
   <div id="app">
 
-    <!-- ====== 左侧时间线侧边栏 ====== -->
+    <!-- ====== 左侧边栏 ====== -->
     <aside class="timeline-sidebar">
-      <div class="timeline-header">
-        <span class="timeline-title">📅 时间线</span>
-        <button id="timelineAllBtn" class="timeline-all-btn active" title="显示全部">全部</button>
-      </div>
-      <div class="timeline-body">
-        <div id="timelineNodes" class="timeline-nodes">
-          <!-- 时间线节点将由 renderer.js 动态生成 -->
+      <!-- 收藏夹面板（在上） -->
+      <div class="favorites-section">
+        <div class="panel-header">
+          <span class="panel-title">⭐ 收藏夹</span>
+          <button id="newFolderBtn" class="btn-icon" title="新建文件夹">+</button>
         </div>
-        <div id="timelineEmpty" class="timeline-empty" style="display:none">
-          <span>暂无记录</span>
+        <div class="favorites-body">
+          <ul id="folderList" class="folder-list">
+            <!-- 由 renderer.js 动态生成 -->
+          </ul>
+        </div>
+      </div>
+
+      <!-- 分割线 -->
+      <div class="sidebar-divider"></div>
+
+      <!-- 时间线面板（在下） -->
+      <div class="timeline-section">
+        <div class="panel-header">
+          <span class="panel-title">📅 时间线</span>
+          <button id="timelineAllBtn" class="timeline-all-btn active" title="显示全部">全部</button>
+        </div>
+        <div class="timeline-body">
+          <div id="timelineNodes" class="timeline-nodes">
+            <!-- 时间线节点由 renderer.js 动态生成 -->
+          </div>
+          <div id="timelineEmpty" class="timeline-empty" style="display:none">
+            <span>暂无记录</span>
+          </div>
         </div>
       </div>
     </aside>
@@ -69,6 +88,18 @@
 
   <!-- Toast 提示 -->
   <div id="toast" class="toast">已复制</div>
+
+  <!-- 弹窗：新建/重命名文件夹 -->
+  <div id="folderModal" class="modal-overlay" style="display:none">
+    <div class="modal-box">
+      <div class="modal-title" id="modalTitle">新建文件夹</div>
+      <input type="text" id="modalInput" class="modal-input" placeholder="输入文件夹名称" />
+      <div class="modal-actions">
+        <button id="modalCancelBtn" class="btn btn-secondary">取消</button>
+        <button id="modalConfirmBtn" class="btn btn-primary">确认</button>
+      </div>
+    </div>
+  </div>
 
   <script src="renderer.js"></script>
 </body>

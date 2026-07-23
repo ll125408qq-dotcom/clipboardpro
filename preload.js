@@ -85,10 +85,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
    * 将文本写入系统剪贴板
    * @param {string} text 要写入的文本
    */
-  /**
-   * 将文本写入系统剪贴板
-   * 通过 IPC 交由主进程执行，避免 contextBridge 安全限制导致写入失败
-   * @param {string} text 要写入的文本
-   */
-  writeClipboard: (text) => ipcRenderer.invoke('write-clipboard', text)
+  writeClipboard: (text) => ipcRenderer.invoke('write-clipboard', text),
+
+  /** 读取设置（快捷键、文件夹列表等） */
+  loadSettings: () => ipcRenderer.invoke('load-settings'),
+
+  /** 保存设置 */
+  saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings)
 });
