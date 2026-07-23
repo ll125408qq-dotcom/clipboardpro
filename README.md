@@ -1,4 +1,4 @@
-# 📋 ClipboardPro
+# 📋 win新剪贴板
 
 [![Windows](https://img.shields.io/badge/platform-Windows%2011-0078D6?logo=windows11)](https://github.com)
 [![Electron](https://img.shields.io/badge/built%20with-Electron-47848F?logo=electron)](https://www.electronjs.org/)
@@ -37,16 +37,16 @@
 
 ### 方式一：安装程序（推荐）
 
-前往 [Releases](https://github.com/ll125408qq-dotcom/clipboardpro/releases) 页面，下载最新的 `ClipboardPro Setup x.x.x.exe`：
+前往 [Releases](https://github.com/ll125408qq-dotcom/clipboardpro/releases) 页面，下载最新的 `win新剪贴板 Setup x.x.x.exe`：
 
 1. 双击运行安装程序
 2. 选择安装路径（或使用默认路径）
 3. 安装完成后，桌面上会生成快捷方式
-4. 双击 `ClipboardPro` 图标即可启动
+4. 双击 `win新剪贴板` 图标即可启动
 
 ### 卸载
 
-打开 **Windows 设置 → 应用 → 已安装的应用** → 找到 `ClipboardPro` → 点击卸载，干净无残留。
+打开 **Windows 设置 → 应用 → 已安装的应用** → 找到 `win新剪贴板` → 点击卸载，干净无残留。
 
 ### 方式二：开发者运行
 
@@ -83,7 +83,7 @@ npm run build
 ## 📁 项目结构
 
 ```
-ClipboardPro/
+win新剪贴板/
 ├── main.js              # Electron 主进程
 ├── preload.js           # 安全桥接预加载脚本
 ├── index.html           # 主界面

@@ -5,7 +5,7 @@
  *
  * 关键设计：
  *   1. 点 × 关闭 → 隐藏到系统托盘，后台静默运行，不退出进程
- *   2. 右键托盘图标 →「退出 ClipboardPro」才能真正退出
+ *   2. 右键托盘图标 →「退出 win新剪贴板」才能真正退出
  *   3. 托盘「设置...」→ 可自定义全局快捷键
  *   4. 开机自启 + 设置持久化（settings.json）
  * ============================================================
@@ -179,7 +179,7 @@ function generateAppIcon() {
 function createTray() {
   const icon = createTrayIcon();
   tray = new Tray(icon);
-  tray.setToolTip('ClipboardPro - 增强型剪贴板管理器');
+  tray.setToolTip('win新剪贴板 - 增强型剪贴板管理器');
   tray.on('double-click', () => {
     if (mainWindow) { mainWindow.show(); mainWindow.focus(); }
   });
@@ -210,7 +210,7 @@ function updateTrayMenu() {
     },
     { type: 'separator' },
     {
-      label: '退出 ClipboardPro',
+      label: '退出 win新剪贴板',
       click: () => { isQuitting = true; app.quit(); }
     }
   ]);

@@ -1,7 +1,7 @@
 {
-  "name": "clipboardpro",
+  "name": "win-clipboard",
   "version": "1.1.0",
-  "description": "Windows 11 风格的增强型剪贴板管理器，支持持久化历史记录与全局快捷键唤醒",
+  "description": "Windows 11 原生风格增强型剪贴板管理器，支持收藏分类、数据持久化与全局快捷键",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -11,7 +11,7 @@
   },
   "build": {
     "appId": "com.clipboardpro.app",
-    "productName": "ClipboardPro",
+    "productName": "win新剪贴板",
     "directories": {
       "output": "dist"
     },
@@ -35,8 +35,8 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "ClipboardPro",
-      "uninstallDisplayName": "ClipboardPro - 增强型剪贴板管理器"
+      "shortcutName": "win新剪贴板",
+      "uninstallDisplayName": "win新剪贴板 - 增强型剪贴板管理器"
     }
   },
   "keywords": [

@@ -484,21 +484,22 @@ body {
   user-select: none;
 }
 
-/* 小按钮（如 + 新建） */
-.btn-icon {
-  width: 22px; height: 22px;
-  border: none; border-radius: 50%;
+/* 新建文件夹按钮（醒目） */
+.btn-new-folder {
+  padding: 3px 10px;
+  border: 1px dashed var(--accent);
+  border-radius: 12px;
   background: transparent;
-  color: var(--text-muted);
-  font-size: 16px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
   -webkit-app-region: no-drag;
   transition: all 0.2s;
 }
-.btn-icon:hover {
-  background: var(--bg-button-hover);
-  color: var(--accent);
+.btn-new-folder:hover {
+  background: var(--accent);
+  color: #fff;
 }
 
 /* 分割线 */
@@ -913,3 +914,49 @@ body {
   color: var(--text-primary);
 }
 .btn-secondary:hover { background: var(--bg-button-hover); }
+
+/* --------------------------------------------------
+ * 右键菜单
+ * -------------------------------------------------- */
+.ctx-menu {
+  position: fixed;
+  z-index: 3000;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  padding: 4px;
+  min-width: 120px;
+  backdrop-filter: blur(20px);
+}
+.ctx-item {
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--text-primary);
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+.ctx-item:hover { background: var(--accent); color: #fff; }
+
+/* --------------------------------------------------
+ * 收藏文件夹选择器
+ * -------------------------------------------------- */
+.fav-picker-list {
+  list-style: none;
+  margin: 0; padding: 0;
+  max-height: 180px;
+  overflow-y: auto;
+}
+.fav-picker-list li {
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fav-picker-list li:hover { background: var(--accent); color: #fff; }
+.fav-picker-list li .fp-icon { font-size: 14px; }
