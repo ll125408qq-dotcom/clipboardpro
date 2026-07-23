@@ -91,86 +91,236 @@ function saveSettings(settings) {
 }
 
 // --------------------------------------------------
-// 程序化生成托盘图标
+// 卡通剪贴板 + 星标图标（托盘 16×16 / 应用 256×256）
 // --------------------------------------------------
+
+// 五角星顶点计算（中心在 cx,cy，外接圆半径 r）
+function starPoints(cx, cy, r) {
+  const pts = [];
+  for (let i = 0; i < 5; i++) {
+    const outerAngle = (i * 2 * Math.PI / 5) - Math.PI / 2;
+    pts.push([cx + r * Math.cos(outerAngle), cy + r * Math.sin(outerAngle)]);
+    const innerAngle = outerAngle + Math.PI / 5;
+    const ri = r * 0.38;
+    pts.push([cx + ri * Math.cos(innerAngle), cy + ri * Math.sin(innerAngle)]);
+  }
+  return pts;
+}
+
+// 点是否在五角星内（射线法）
+function pointInStar(px, py, star) {
+  let inside = false;
+  for (let i = 0, j = star.length - 1; i < star.length; j = i++) {
+    const xi = star[i][0], yi = star[i][1];
+    const xj = star[j][0], yj = star[j][1];
+    if ((yi > py) !== (yj > py) && px < (xj - xi) * (py - yi) / (yj - yi) + xi)
+      inside = !inside;
+  }
+  return inside;
+}
+
+// 圆角矩形距离场（有符号距离：负值=内部，正值=外部）
+function roundedRectSDF(x, y, rx, ry, rw, rh, cr) {
+  const dx = Math.abs(x - rx) - rw;
+  const dy = Math.abs(y - ry) - rh;
+  const cx = Math.max(dx, 0);
+  const cy = Math.max(dy, 0);
+  return Math.sqrt(cx * cx + cy * cy) - cr;
+}
+
+// —— 系统托盘图标（16×16）——
 function createTrayIcon() {
-  const size = 16;
-  const buf = Buffer.alloc(size * size * 4, 0);
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const idx = (y * size + x) * 4;
-      const dx = x - 7.5, dy = y - 7.5;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 6) {
-        const alpha = dist > 5 ? 150 : 255;
-        buf[idx] = 0; buf[idx + 1] = 103;
-        buf[idx + 2] = 192; buf[idx + 3] = alpha;
+  const S = 16;
+  const buf = Buffer.alloc(S * S * 4, 0);
+  const set = (x, y, r, g, b, a) => {
+    if (x < 0 || x >= S || y < 0 || y >= S) return;
+    const i = (y * S + x) * 4;
+    buf[i] = r; buf[i+1] = g; buf[i+2] = b; buf[i+3] = a;
+  };
+
+  // 颜色
+  const BODY    = [232, 213, 183];   // 米色纸
+  const OUTLINE = [90,  72,  52];    // 深褐边框
+  const CLIP    = [182, 184, 194];   // 银灰夹
+  const CLIP_HL = [210, 212, 220];   // 夹子高光
+  const STAR    = [255, 215,   0];   // 金星
+  const LINE    = [208, 186, 155];   // 纸内横线
+
+  // 剪贴板主体：圆角矩形 (x=2..13, y=4..14)，圆角≈2
+  for (let y = 0; y < S; y++) {
+    for (let x = 0; x < S; x++) {
+      // 到圆角矩形 (cx=7.5,cy=9, w=5.5,h=5.5, cr=2.5) 的最近距离
+      const d = roundedRectSDF(x + 0.5, y + 0.5, 7.5, 9, 5.5, 5.5, 2.5);
+      if (d < 0) {
+        if (d > -1.2) {
+          // 边框
+          const a = Math.round(Math.min(255, Math.max(0, -d * 200)));
+          set(x, y, OUTLINE[0], OUTLINE[1], OUTLINE[2], a);
+        } else {
+          set(x, y, BODY[0], BODY[1], BODY[2]);
+        }
+      } else if (d < 1) {
+        // 抗锯齿边缘
+        const a = Math.round(Math.min(255, Math.max(0, (1 - d) * 200)));
+        set(x, y, OUTLINE[0], OUTLINE[1], OUTLINE[2], a);
       }
     }
   }
-  return nativeImage.createFromBuffer(buf, { width: size, height: size });
+
+  // 夹子（顶部）
+  set(5, 2, CLIP[0], CLIP[1], CLIP[2]);
+  set(6, 2, CLIP[0], CLIP[1], CLIP[2]);
+  set(7, 2, CLIP[0], CLIP[1], CLIP[2]);
+  set(8, 2, CLIP[0], CLIP[1], CLIP[2]);
+  set(9, 2, CLIP[0], CLIP[1], CLIP[2]);
+  set(5, 3, CLIP[0], CLIP[1], CLIP[2]);
+  set(6, 3, CLIP_HL[0], CLIP_HL[1], CLIP_HL[2]); // 高光
+  set(7, 3, CLIP_HL[0], CLIP_HL[1], CLIP_HL[2]);
+  set(8, 3, CLIP[0], CLIP[1], CLIP[2]);
+  set(9, 3, CLIP[0], CLIP[1], CLIP[2]);
+  set(10,3, CLIP[0], CLIP[1], CLIP[2]);
+
+  // 纸内横线（装饰）
+  for (let x = 4; x <= 10; x++) set(x, 7, LINE[0], LINE[1], LINE[2]);
+  for (let x = 4; x <= 10; x++) set(x,10, LINE[0], LINE[1], LINE[2]);
+
+  // ★ 右上角五角星（约 4×4 像素）
+  set(12, 3, STAR[0], STAR[1], STAR[2]);       // 尖顶
+  set(11, 4, STAR[0], STAR[1], STAR[2]);
+  set(12, 4, STAR[0], STAR[1], STAR[2]);
+  set(13, 4, STAR[0], STAR[1], STAR[2]);
+  set(12, 5, STAR[0], STAR[1], STAR[2]);       // 尖底
+  set(11, 5, STAR[0], STAR[1], STAR[2]);
+  set(13, 5, STAR[0], STAR[1], STAR[2]);
+
+  return nativeImage.createFromBuffer(buf, { width: S, height: S });
 }
 
-// --------------------------------------------------
-// 创建应用图标（用于打包和快捷方式）
-//   生成一个 256×256 的 PNG，然后保存为 .ico 兼容格式
-//   实际上 electron-builder 可以从 PNG 自动转换，
-//   这里生成一个简单 PNG 放在 assets/
-// --------------------------------------------------
+// —— 应用图标（256×256，供打包用）——
 function generateAppIcon() {
   const assetsDir = path.join(__dirname, 'assets');
   if (!fs.existsSync(assetsDir)) fs.mkdirSync(assetsDir, { recursive: true });
 
   const iconPath = path.join(assetsDir, 'icon.png');
-  if (fs.existsSync(iconPath)) return; // 已存在则跳过
+  if (fs.existsSync(iconPath)) return;
 
-  const size = 256;
-  const buf = Buffer.alloc(size * size * 4, 0);
-  const cx = size / 2, cy = size / 2, r = size * 0.42;
+  const S = 256;
+  const buf = Buffer.alloc(S * S * 4, 0);
 
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const idx = (y * size + x) * 4;
-      const dx = x - cx, dy = y - cy;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < r) {
-        const alpha = dist > r - 3 ? 200 : 255;
-        buf[idx] = 0; buf[idx + 1] = 103;
-        buf[idx + 2] = 192; buf[idx + 3] = alpha;
+  // 颜色
+  const BODY    = [235, 218, 190];
+  const OUTLINE = [80,  64,  48];
+  const CLIP    = [176, 178, 192];
+  const CLIP_HL = [210, 212, 224];
+  const STAR    = [255, 215,   0];
+  const STAR_HL = [255, 230,  80];
+  const LINE    = [212, 192, 162];
+
+  // 五角星顶点
+  const star = starPoints(S * 0.82, S * 0.18, S * 0.12);
+
+  for (let y = 0; y < S; y++) {
+    for (let x = 0; x < S; x++) {
+      const i = (y * S + x) * 4;
+
+      // —— 剪贴板主体（圆角矩形）——
+      // 内框位置：中心偏下，留出夹子空间
+      const cr = S * 0.07;        // 圆角半径 ~18
+      const bw = S * 0.38;        // 半宽 ~97
+      const bh = S * 0.44;        // 半高 ~113
+      const cx = S * 0.5;         // 中心 x
+      const cy = S * 0.52;        // 中心 y（略偏下）
+
+      const d = roundedRectSDF(x + 0.5, y + 0.5, cx, cy, bw, bh, cr);
+
+      if (d < -1.5) {
+        // 内部：米色纸
+        buf[i] = BODY[0]; buf[i+1] = BODY[1]; buf[i+2] = BODY[2]; buf[i+3] = 255;
+
+        // 纸内横线（浅）
+        const relY = y - (cy - bh) + cr;
+        if ((Math.abs(relY - bh * 0.42) < 1.5) || (Math.abs(relY - bh * 0.66) < 1.5)) {
+          if (x > cx - bw * 0.7 && x < cx + bw * 0.7) {
+            buf[i] = LINE[0]; buf[i+1] = LINE[1]; buf[i+2] = LINE[2];
+          }
+        }
+      } else if (d < 0) {
+        // 边框过渡区（d: -1.5 ~ 0）
+        const t = -d / 1.5;
+        buf[i]   = Math.round(OUTLINE[0] * (1 - t) + BODY[0] * t);
+        buf[i+1] = Math.round(OUTLINE[1] * (1 - t) + BODY[1] * t);
+        buf[i+2] = Math.round(OUTLINE[2] * (1 - t) + BODY[2] * t);
+        buf[i+3] = 255;
+      } else if (d < 2) {
+        // 外边缘抗锯齿
+        const a = Math.round(Math.min(255, Math.max(0, (2 - d) * 128)));
+        buf[i] = OUTLINE[0]; buf[i+1] = OUTLINE[1]; buf[i+2] = OUTLINE[2]; buf[i+3] = a;
       }
     }
   }
 
-  // 写为简单 BMP 头 + 像素数据（临时方案，方便 electron-builder 识别）
-  // 实际上用 PNG 更标准，这里写一个最小 BMP
+  // —— 夹子 ——
+  // 画在主体外顶部，近似圆角矩形
+  const clipY1 = Math.round(cy - bh - cr * 0.5);
+  const clipY2 = Math.round(cy - bh + cr * 1.2);
+  const clipX1 = Math.round(cx - bh * 0.22);
+  const clipX2 = Math.round(cx + bh * 0.22);
+
+  for (let y = clipY1; y <= clipY2; y++) {
+    for (let x = clipX1; x <= clipX2; x++) {
+      if (x < 0 || x >= S || y < 0 || y >= S) continue;
+      const dc = roundedRectSDF(x + 0.5, y + 0.5, (clipX1 + clipX2) / 2, (clipY1 + clipY2) / 2,
+        (clipX2 - clipX1) / 2, (clipY2 - clipY1) / 2, 3);
+      if (dc < 0) {
+        const i = (y * S + x) * 4;
+        // 顶部高光
+        const isHighlight = y < clipY1 + (clipY2 - clipY1) * 0.4;
+        if (isHighlight) {
+          buf[i] = CLIP_HL[0]; buf[i+1] = CLIP_HL[1]; buf[i+2] = CLIP_HL[2]; buf[i+3] = 255;
+        } else {
+          buf[i] = CLIP[0]; buf[i+1] = CLIP[1]; buf[i+2] = CLIP[2]; buf[i+3] = 255;
+        }
+      }
+    }
+  }
+
+  // —— ★ 五角星（右上角）——
+  for (let y = 0; y < S; y++) {
+    for (let x = 0; x < S; x++) {
+      if (pointInStar(x + 0.5, y + 0.5, star)) {
+        const i = (y * S + x) * 4;
+        // 星星颜色渐变（中心高亮）
+        const distFromCenter = Math.sqrt((x - S * 0.82) ** 2 + (y - S * 0.18) ** 2);
+        const t = Math.min(1, distFromCenter / (S * 0.08));
+        buf[i]   = Math.round(STAR[0] * (1 - t) + STAR_HL[0] * t);
+        buf[i+1] = Math.round(STAR[1] * (1 - t) + STAR_HL[1] * t);
+        buf[i+2] = Math.round(STAR[2] * (1 - t) + STAR_HL[2] * t);
+        buf[i+3] = 255;
+      }
+    }
+  }
+
+  // —— 输出为 BMP（electron-builder 可接受）——
   const fileSize = 54 + buf.length;
   const header = Buffer.alloc(54);
-  header.write('BM', 0);                    // 签名
-  header.writeUInt32LE(fileSize, 2);        // 文件大小
-  header.writeUInt32LE(54, 10);             // 像素偏移
-  header.writeUInt32LE(40, 14);             // DIB 头大小
-  header.writeInt32LE(size, 18);            // 宽
-  header.writeInt32LE(-size, 22);           // 高（负值 = 从上到下）
-  header.writeUInt16LE(1, 26);              // 颜色平面
-  header.writeUInt16LE(32, 28);             // 位深度
-  header.writeUInt32LE(0, 30);              // 压缩
-  header.writeUInt32LE(buf.length, 34);     // 图像大小
+  header.write('BM', 0);
+  header.writeUInt32LE(fileSize, 2);
+  header.writeUInt32LE(54, 10);
+  header.writeUInt32LE(40, 14);
+  header.writeInt32LE(S, 18);
+  header.writeInt32LE(-S, 22);
+  header.writeUInt16LE(1, 26);
+  header.writeUInt16LE(32, 28);
+  header.writeUInt32LE(0, 30);
+  header.writeUInt32LE(buf.length, 34);
 
   fs.writeFileSync(iconPath, Buffer.concat([header, buf]));
-  console.log('【图标】已生成 assets/icon.png');
+  console.log('【图标】已生成 assets/icon.png (卡通剪贴板 + ★)');
 
-  // 同时生成 .ico 文件（electron-builder 在 Windows 上需要 .ico）
-  // 简单方案：复制 BMP 为 .ico（electron-builder 可以接受 PNG 自动转 ico）
-  const pngHeader = Buffer.from([
-    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A  // PNG signature
-  ]);
-  // 这里用最简单的 BMP -> ico 包装方式
+  // .ico 直接复制 BMP（electron-builder 会在构建时自动转换）
   const icoPath = path.join(assetsDir, 'icon.ico');
-  if (!fs.existsSync(icoPath)) {
-    // 只写 BMP 头部分作为占位，让 electron-builder 用 png 生成真正的 ico
-    fs.copyFileSync(iconPath, icoPath);
-    console.log('【图标】已生成 assets/icon.ico');
-  }
+  fs.copyFileSync(iconPath, icoPath);
+  console.log('【图标】已生成 assets/icon.ico');
 }
 
 // --------------------------------------------------

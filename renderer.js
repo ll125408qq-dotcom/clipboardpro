@@ -46,10 +46,17 @@ const favPickerModal = document.getElementById('favPickerModal');
 const favPickerList = document.getElementById('favPickerList');
 const favPickerNewBtn = document.getElementById('favPickerNewBtn');
 const favPickerCancelBtn = document.getElementById('favPickerCancelBtn');
+// 确认弹窗
+const confirmModal = document.getElementById('confirmModal');
+const confirmModalTitle = document.getElementById('confirmModalTitle');
+const confirmModalMsg = document.getElementById('confirmModalMsg');
+const confirmOkBtn = document.getElementById('confirmOkBtn');
+const confirmCancelBtn = document.getElementById('confirmCancelBtn');
 
 let ctxTargetFolder = '';           // 右键菜单目标文件夹
 let renameTarget = null;            // 重命名目标，null=新建模式，有值=重命名模式
 let favTargetItemId = null;         // 正在收藏的 item id
+let confirmCallback = null;         // 确认弹窗回调
 
 // --------------------------------------------------
 // 初始化
@@ -120,13 +127,6 @@ async function saveHistory() {
 
 function renderFolders() {
   folderListEl.innerHTML = '';
-
-  // 全部内容 —— 清空所有过滤，显示全部记录
-  const allItems = document.createElement('li');
-  allItems.className = 'folder-item' + (currentFolder === null && !isFavFilter && !currentTimeFilter ? ' active' : '');
-  allItems.innerHTML = `<span class="folder-icon">📋</span><span class="folder-name">全部内容</span><span class="folder-count">${historyItems.length}</span>`;
-  allItems.addEventListener('click', () => { selectAllItems(); });
-  folderListEl.appendChild(allItems);
 
   // 全部收藏 —— 过滤所有 favorite === true
   const allFav = document.createElement('li');
@@ -205,7 +205,11 @@ ctxMenu.addEventListener('click', (e) => {
     modalInput.focus();
   } else if (action === 'delete') {
     if (ctxTargetFolder === '默认') { showToast('不能删除默认文件夹'); return; }
-    if (confirm(`确定删除「${ctxTargetFolder}」？其中的收藏将被取消。`)) deleteFolder(ctxTargetFolder);
+    showConfirmModal(
+      '确认删除',
+      `确定删除「${ctxTargetFolder}」？其中的收藏将被取消。`,
+      () => { deleteFolder(ctxTargetFolder); }
+    );
   }
 });
 
@@ -449,6 +453,22 @@ modalConfirmBtn.addEventListener('click', () => {
 modalCancelBtn.addEventListener('click', () => { folderModal.style.display = 'none'; renameTarget = null; folderModal._pendingFav = null; });
 folderModal.addEventListener('click', (e) => { if (e.target === folderModal) { folderModal.style.display = 'none'; renameTarget = null; folderModal._pendingFav = null; } });
 modalInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') modalConfirmBtn.click(); if (e.key === 'Escape') { folderModal.style.display = 'none'; renameTarget = null; folderModal._pendingFav = null; } });
+
+// --------------------------------------------------
+//  确认弹窗
+// --------------------------------------------------
+function showConfirmModal(title, msg, onConfirm) {
+  confirmModalTitle.textContent = title;
+  confirmModalMsg.textContent = msg;
+  confirmCallback = onConfirm;
+  confirmModal.style.display = 'flex';
+}
+confirmOkBtn.addEventListener('click', () => {
+  if (confirmCallback) { confirmCallback(); confirmCallback = null; }
+  confirmModal.style.display = 'none';
+});
+confirmCancelBtn.addEventListener('click', () => { confirmModal.style.display = 'none'; confirmCallback = null; });
+confirmModal.addEventListener('click', (e) => { if (e.target === confirmModal) { confirmModal.style.display = 'none'; confirmCallback = null; } });
 
 // ============================================================
 //  事件绑定

@@ -889,6 +889,12 @@ body {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(0,103,192,0.15);
 }
+.modal-message {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 4px 0;
+}
 .modal-actions {
   display: flex;
   gap: 8px;
